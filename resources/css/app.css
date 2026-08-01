@@ -6,4 +6,95 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Scoped to the Barangay Fatima / Bantay Fatima brand lockup only — the rest of the site stays on --font-sans. */
+    --font-brand: 'Times New Roman', Times, Georgia, serif;
+
+    /* Bantay Fatima strict color palette — do not add or substitute colors outside this set. */
+    --color-navy: #0b2d4d;
+    --color-teal: #0f8877;
+    --color-sky: #2f80ed;
+    --color-amber: #f5a623;
+    --color-red-urgent: #d64545;
+    --color-surface: #f4f7f9;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 5.5rem;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-sky);
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
+    .skip-link {
+        position: absolute;
+        top: -3rem;
+        left: 1rem;
+        z-index: 100;
+        background: var(--color-navy);
+        color: #fff;
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: top 0.15s ease-in-out;
+    }
+
+    .skip-link:focus {
+        top: 1rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}
+
+@layer components {
+    .scroll-reveal {
+        opacity: 0;
+        transform: translateY(1.75rem);
+        transition:
+            opacity 650ms ease var(--reveal-delay, 0ms),
+            transform 650ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+        will-change: opacity, transform;
+    }
+
+    .scroll-reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .wrap {
+        margin-inline: auto;
+        max-width: 80rem;
+        padding-inline: 1.25rem;
+    }
+
+    @media (min-width: 48rem) {
+        .wrap {
+            padding-inline: 2rem;
+        }
+    }
+
+    @media (min-width: 64rem) {
+        .wrap {
+            padding-inline: 3rem;
+        }
+    }
 }
