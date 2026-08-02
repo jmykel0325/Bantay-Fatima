@@ -1,0 +1,19 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Local emulator screenshots used for visual verification
+/civic-home.png
+/landing-*.png
+/splash-*.png
+
+# Signing credentials must never be committed
+*.jks
+*.keystore

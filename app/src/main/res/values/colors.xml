@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- Bantay Fatima brand -->
+    <color name="bantay_navy">#FF0B2D4D</color>
+    <color name="bantay_green">#FF0F8877</color>
+    <color name="bantay_gold">#FFC9A227</color>
+    <color name="bantay_background">#FFF4F7F9</color>
+
+    <!-- Adaptive launcher icon backdrop, behind the logo foreground. -->
+    <color name="ic_launcher_background">#FFF4F7F9</color>
+</resources>

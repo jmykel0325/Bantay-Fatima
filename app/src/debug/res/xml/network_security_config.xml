@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Debug builds only.
+
+    Local development uses `php artisan serve`, which speaks plain HTTP. The host is
+    not fixed (10.0.2.2 for the emulator, an arbitrary 192.168.x.x / 10.x.x.x address
+    for a physical phone on the same Wi-Fi), so cleartext is allowed broadly here
+    rather than pinned to one domain.
+
+    Release builds do not include this file and therefore keep the platform default:
+    cleartext denied, HTTPS required.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

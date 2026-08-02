@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Android masks splash icons. The inset keeps the complete square brand
+         mark inside the platform safe zone instead of cropping its lettering. -->
+    <item
+        android:width="152dp"
+        android:height="152dp"
+        android:gravity="center">
+        <inset
+            android:insetLeft="42dp"
+            android:insetTop="42dp"
+            android:insetRight="42dp"
+            android:insetBottom="42dp">
+            <bitmap
+                android:gravity="fill"
+                android:src="@drawable/bantay_fatima_logo" />
+        </inset>
+    </item>
+</layer-list>

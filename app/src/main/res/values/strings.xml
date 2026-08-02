@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Bantay Fatima</string>
+
+    <!-- Connection test screen -->
+    <string name="connection_title">Bantay Fatima</string>
+    <string name="connection_subtitle">Connecting the mobile application to the Bantay Fatima server.</string>
+    <string name="connection_status_heading">Connection status</string>
+    <string name="connection_message_idle">Press the button to test the Laravel API connection.</string>
+    <string name="connection_message_loading">Connecting to the Bantay Fatima server…</string>
+    <string name="connection_action_test">Test Connection</string>
+    <string name="connection_action_retry">Retry</string>
+
+    <!-- Failure messages. Deliberately plain language, never exception text. -->
+    <string name="connection_error_server_unavailable">Unable to reach the Bantay Fatima server. Make sure the Laravel server is running.</string>
+    <string name="connection_error_network">Please check your network connection and try again.</string>
+    <string name="connection_error_unexpected_response">The server returned an unexpected response.</string>
+    <string name="connection_error_unknown">Something went wrong while contacting the server. Please try again.</string>
+
+    <!-- Result details -->
+    <string name="connection_detail_application">Application</string>
+    <string name="connection_detail_environment">Environment</string>
+    <string name="connection_detail_server_time">Server time</string>
+
+    <!-- Accessibility -->
+    <string name="connection_status_connected">Connected</string>
+    <string name="connection_status_failed">Connection failed</string>
+    <string name="connection_status_in_progress">Connecting</string>
+    <string name="connection_status_not_tested">Not tested yet</string>
+
+    <!-- Debug builds only -->
+    <string name="connection_debug_base_url">Debug base URL: %1$s</string>
+</resources>
