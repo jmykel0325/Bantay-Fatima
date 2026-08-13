@@ -36,6 +36,13 @@
         'database' => '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/>',
         'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
         'download' => '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/>',
+        // Mirrors of the Android landing screen icons (LandingPageScreen.kt).
+        'search' => '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+        'edit-note' => '<path d="M4 7h11M4 12h7M4 17h5"/><path d="m15.5 17.5 5-5 2.5 2.5-5 5H15.5v-2.5Z"/>',
+        'article' => '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 12.5h8M8 16h5"/>',
+        'headset' => '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13.5" width="4" height="6" rx="1.6"/><rect x="17.5" y="13.5" width="4" height="6" rx="1.6"/><path d="M20 19.5v.5a2.5 2.5 0 0 1-2.5 2.5H13"/>',
+        'info' => '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.9" r="0.7"/>',
+        'siren' => '<path d="M6 19v-6a6 6 0 0 1 12 0v6"/><rect x="4" y="19" width="16" height="2.5" rx="1"/><path d="M12 4V2M4.6 7 3.2 5.6M19.4 7l1.4-1.4"/>',
     ];
 
     $path = $paths[$name] ?? '';

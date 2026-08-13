@@ -16,7 +16,7 @@ class VerificationCodeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: $this->purpose === 'registration' ? 'Verify your Bantay Fatima account' : 'Reset your Bantay Fatima password');
+        return new Envelope(subject: $this->purpose === 'registration' ? 'Your Bantay Fatima Verification Code' : 'Your Bantay Fatima Password Reset Code');
     }
 
     public function content(): Content

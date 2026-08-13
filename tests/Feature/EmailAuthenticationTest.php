@@ -73,8 +73,8 @@ class EmailAuthenticationTest extends TestCase
     public function test_registration_sends_code_without_creating_user(): void
     {
         Mail::fake();
-        $this->postJson('/api/auth/register/send-code', $this->registrationData())->assertOk()->assertJsonPath('email', 'resident@example.com');
-        Mail::assertSent(VerificationCodeMail::class, fn ($mail) => $mail->hasTo('resident@example.com'));
+        $this->postJson('/api/auth/register/request-code', $this->registrationData())->assertOk()->assertJsonPath('data.email', 'resident@gmail.com');
+        Mail::assertSent(VerificationCodeMail::class, fn ($mail) => $mail->hasTo('resident@gmail.com'));
         $this->assertDatabaseCount('users', 0);
     }
 
@@ -103,12 +103,12 @@ class EmailAuthenticationTest extends TestCase
     public function test_api_login_returns_sanctum_token(): void
     {
         User::factory()->create(['email' => 'resident@example.com', 'password' => Hash::make('Password1')]);
-        $this->postJson('/api/auth/login', ['email' => 'resident@example.com', 'password' => 'Password1', 'device_name' => 'Test Android'])->assertOk()->assertJsonStructure(['success','message','user', 'token', 'token_type'])->assertJsonPath('user.role','resident');
+        $this->postJson('/api/auth/login', ['email' => 'resident@example.com', 'password' => 'Password1', 'device_name' => 'Test Android'])->assertOk()->assertJsonStructure(['success','message','data' => ['user', 'token', 'token_type']])->assertJsonPath('data.user.role','resident');
     }
 
     private function registrationData(): array
     {
-        return ['first_name' => 'Jose', 'middle_name' => 'Ñolasco', 'last_name' => 'Dela-Cruz', 'suffix' => null, 'email' => 'resident@example.com', 'phone_number' => '0917 123 4567', 'password' => 'Password1', 'password_confirmation' => 'Password1', 'terms' => true];
+        return ['first_name' => 'Jose', 'middle_name' => 'Nolasco', 'last_name' => 'Dela-Cruz', 'suffix' => null, 'email' => 'resident@gmail.com', 'phone_number' => '0917 123 4567', 'password' => 'Password1', 'password_confirmation' => 'Password1', 'terms' => true];
     }
 
     private function pendingPayload(): array

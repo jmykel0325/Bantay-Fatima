@@ -18,7 +18,6 @@
                 <li><a href="#about" class="text-white/75 hover:text-white">About</a></li>
                 <li><a href="#features" class="text-white/75 hover:text-white">Features</a></li>
                 <li><a href="#how-it-works" class="text-white/75 hover:text-white">How It Works</a></li>
-                <li><a href="#android-app" class="text-white/75 hover:text-white">Android App</a></li>
                 <li><a href="#emergency" class="text-white/75 hover:text-white">Emergency Information</a></li>
                 <li><a href="#support" class="text-white/75 hover:text-white">Support</a></li>
             </ul>
@@ -27,7 +26,7 @@
         <nav aria-label="Platform links">
             <h3 class="text-sm font-semibold uppercase tracking-wide text-white/50">Platforms</h3>
             <ul class="mt-4 space-y-2.5 text-sm">
-                <li><a href="#android-app" class="text-white/75 hover:text-white">Android Application</a></li>
+                <li><span class="text-white/75">Android Application</span></li>
                 <li><span class="text-white/75">Administrator Web Portal</span></li>
             </ul>
         </nav>

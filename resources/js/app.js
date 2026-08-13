@@ -1,5 +1,15 @@
 import './email-verification';
 
+const phoneMockupSource = document.getElementById('bantay-phone-mockup');
+const heroPhoneTarget = document.getElementById('hero-phone-mockup');
+
+if (phoneMockupSource && heroPhoneTarget) {
+    const phoneMockup = phoneMockupSource.cloneNode(true);
+    phoneMockup.removeAttribute('id');
+    phoneMockup.className = 'hero-phone-clone';
+    heroPhoneTarget.appendChild(phoneMockup);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const menuButton = document.getElementById('mobile-menu-button');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -59,8 +69,17 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     if (!prefersReducedMotion && revealElements.length > 0) {
+        const revealVariants = [
+            'scroll-reveal-up',
+            'scroll-reveal-left',
+            'scroll-reveal-right',
+            'scroll-reveal-scale',
+            'scroll-reveal-tilt',
+        ];
+
         revealElements.forEach((element, index) => {
             element.classList.add('scroll-reveal');
+            element.classList.add(revealVariants[Math.floor(Math.random() * revealVariants.length)]);
             element.style.setProperty('--reveal-delay', `${(index % 4) * 70}ms`);
         });
 

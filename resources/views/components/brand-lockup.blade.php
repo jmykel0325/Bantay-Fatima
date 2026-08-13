@@ -6,7 +6,8 @@
 ])
 
 @php
-    $logoSize = auth()->check() ? 'lg' : ($size === 'lg' ? 'lg' : 'sm');
+    // Match the wordmark height to the seal so both sit at the same size.
+    $logoSize = auth()->check() ? 'lg' : ($size === 'lg' ? 'xl' : 'nav');
 
     $sealClasses = $size === 'lg' ? 'h-20 w-20' : 'h-11 w-11';
     $titleClasses = $size === 'lg' ? 'text-2xl sm:text-3xl' : 'text-base sm:text-lg';

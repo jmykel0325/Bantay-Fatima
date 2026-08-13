@@ -27,7 +27,7 @@
     };
 
     $buttonClasses = match (true) {
-        $buttonStyle === 'outline' => 'border border-navy/20 bg-white text-navy hover:border-navy/40 hover:bg-surface',
+        $buttonStyle === 'outline' => 'border border-primary bg-white text-primary hover:bg-primary/5',
         $accent === 'sky' => 'bg-sky text-white hover:bg-sky/90',
         default => 'bg-teal text-white hover:bg-teal/90',
     };

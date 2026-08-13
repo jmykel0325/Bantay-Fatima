@@ -8,13 +8,13 @@
 @php
     [$statusLabel, $badgeClasses, $dotClasses] = match ($status) {
         'in-progress' => ['In Progress', 'bg-sky/15 text-navy', 'bg-sky'],
-        'resolved' => ['Resolved', 'bg-teal/15 text-navy', 'bg-teal'],
+        'resolved' => ['Resolved', 'bg-resolved/15 text-navy', 'bg-resolved'],
         'rejected' => ['Rejected', 'bg-red-urgent/15 text-navy', 'bg-red-urgent'],
         default => ['Pending', 'bg-amber/15 text-navy', 'bg-amber'],
     };
 @endphp
 
-<article class="flex h-full flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-navy/5">
+<article class="landing-card flex h-full flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-navy/5">
     <span class="inline-flex w-fit items-center rounded-full bg-navy/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-navy/60">
         Sample Report
     </span>
@@ -38,7 +38,7 @@
         </span>
     </div>
 
-    <button type="button" class="mt-auto inline-flex min-h-[44px] w-full items-center justify-center rounded-xl border border-navy/15 bg-white px-4 text-sm font-semibold text-navy transition-colors hover:border-navy/30 hover:bg-surface">
+    <button type="button" class="mt-auto inline-flex min-h-[44px] w-full items-center justify-center rounded-xl border border-primary bg-white px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary/5">
         View Details
     </button>
 </article>

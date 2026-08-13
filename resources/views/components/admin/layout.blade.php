@@ -24,7 +24,7 @@
             </div>
         </header>
         <main id="main-content" class="p-4 sm:p-6 lg:p-8">
-            @if(session('success'))<div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800" role="status">{{ session('success') }}</div>@endif
+            @if(session('success'))<div class="mb-5 rounded-xl border border-resolved/20 bg-resolved/10 p-4 text-sm text-resolved" role="status">{{ session('success') }}</div>@endif
             @if($errors->any())<div class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">{{ $errors->first() }}</div>@endif
             @if(request()->routeIs('admin.reports.show') && request()->route('report'))
                 <x-report-photo-gallery :report="request()->route('report')" class="mb-6" />

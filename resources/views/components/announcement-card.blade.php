@@ -12,7 +12,7 @@
     };
 @endphp
 
-<article class="flex h-full flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-navy/5">
+<article class="landing-card flex h-full flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-navy/5">
     <div class="flex items-center justify-between gap-3">
         <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl {{ $iconWrapClasses }}">
             <x-icon :name="$icon" class="h-5 w-5" />

@@ -7,6 +7,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ $title ?? 'Bantay Fatima' }}</title>
+        <link rel="icon" type="image/png" href="{{ asset('assets/BantayFatimaLogo.png') }}">
 
         @fonts
 

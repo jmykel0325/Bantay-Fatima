@@ -38,7 +38,7 @@
             @csrf @method('PATCH')
             <div class="flex items-center justify-between gap-3"><h3 class="font-bold">Report validation</h3><x-admin.badge :value="$report->validation_status" /></div>
             @if($report->validation_status === 'validated')
-                <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Validated {{ $report->validated_at?->format('M d, Y g:i A') }}. This report may now be assigned to staff.</div>
+                <div class="mt-4 rounded-xl border border-resolved/20 bg-resolved/10 p-4 text-sm text-resolved">Validated {{ $report->validated_at?->format('M d, Y g:i A') }}. This report may now be assigned to staff.</div>
             @else
                 <p class="mt-3 text-sm text-navy/60">Review the report details, photo evidence, and location before allowing barangay action.</p>
             @endif

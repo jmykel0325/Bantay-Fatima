@@ -29,15 +29,27 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $email)->first();
-        if (! $user || ! in_array($user->role, ['resident', 'staff'], true) || ! $user->email_verified_at || ! Hash::check($request->string('password'), $user->password) || $user->status !== 'active') {
+        if (! $user || ! in_array($user->role, ['resident', 'staff'], true) || ! $user->email_verified_at || ! Hash::check($request->string('password'), $user->password)) {
             RateLimiter::hit($key, 60);
-            throw ValidationException::withMessages(['email' => 'The provided email address or password is incorrect.']);
+            $message = $user?->role === 'admin'
+                ? 'This account is not authorized to use the mobile application.'
+                : 'The email or password is incorrect.';
+            throw ValidationException::withMessages(['email' => $message]);
+        }
+
+        if ($user->status !== 'active') {
+            $message = $user->status === 'suspended'
+                ? 'This account has been suspended. Please contact Barangay Fatima.'
+                : 'This account is currently inactive. Please contact Barangay Fatima.';
+            throw ValidationException::withMessages(['email' => $message]);
         }
 
         RateLimiter::clear($key);
         $token = $user->createToken($request->input('device_name', 'Android device'))->plainTextToken;
 
-        return response()->json(['success' => true, 'message' => 'Login successful.', 'token' => $token, 'token_type' => 'Bearer', 'user' => $user->only(['id','first_name','last_name','role','status'])]);
+        $user->forceFill(['last_login_at' => now()])->save();
+
+        return $this->authResponse($user, $token, 'Login successful.');
     }
 
     public function sendRegistrationCode(RegisterRequest $request, EmailVerificationService $verification): JsonResponse
@@ -48,7 +60,29 @@ class AuthController extends Controller
         unset($data['password_confirmation'], $data['terms'], $data['device_name']);
         $verification->issue($data['email'], 'registration', $data);
 
-        return response()->json(['message' => 'Verification code sent.', 'email' => $data['email']]);
+        return response()->json([
+            'success' => true,
+            'message' => 'We sent a six-digit verification code to '.EmailVerificationService::mask($data['email']).'.',
+            'data' => ['email' => $data['email'], 'masked_email' => EmailVerificationService::mask($data['email']), 'expires_in' => 600, 'resend_after' => 60],
+        ]);
+    }
+
+    public function resendRegistrationCode(Request $request, EmailVerificationService $verification): JsonResponse
+    {
+        $validated = $request->validate(['email' => ['required', 'email:rfc', 'ends_with:@gmail.com', 'max:255']]);
+        $email = mb_strtolower(trim($validated['email']));
+        $record = \App\Models\EmailVerificationCode::where('email', $email)->where('purpose', 'registration')->first();
+        if (! $record) {
+            throw ValidationException::withMessages(['email' => 'Start registration before requesting another verification code.']);
+        }
+
+        $verification->issue($email, 'registration', $record->payload, true);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'A new verification code was sent.',
+            'data' => ['email' => $email, 'masked_email' => EmailVerificationService::mask($email), 'expires_in' => 600, 'resend_after' => 60],
+        ]);
     }
 
     public function verifyRegistration(VerifyRegistrationRequest $request, EmailVerificationService $verification): JsonResponse
@@ -57,8 +91,12 @@ class AuthController extends Controller
         $data = $record->payload;
 
         $user = DB::transaction(function () use ($data, $record): User {
-            if (User::where('email', $data['email'])->orWhere('phone_number', $data['phone_number'])->exists()) {
-                throw ValidationException::withMessages(['email' => 'An account already exists with this email address or phone number.']);
+            $duplicate = User::where('email', $data['email']);
+            if (! empty($data['phone_number'])) {
+                $duplicate->orWhere('phone_number', $data['phone_number']);
+            }
+            if ($duplicate->exists()) {
+                throw ValidationException::withMessages(['email' => 'An account is already registered with this email.']);
             }
             $user = User::create([...$data, 'email_verified_at' => now(), 'role' => 'resident', 'status' => 'active']);
             $record->delete();
@@ -68,7 +106,7 @@ class AuthController extends Controller
 
         $token = $user->createToken($request->input('device_name', 'Android device'))->plainTextToken;
 
-        return response()->json(['user' => $user, 'token' => $token, 'token_type' => 'Bearer'], 201);
+        return $this->authResponse($user, $token, 'Resident account verified and created.', 201);
     }
 
     public function sendResetCode(ForgotEmailRequest $request, EmailVerificationService $verification): JsonResponse
@@ -98,6 +136,19 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()?->delete();
 
-        return response()->json(['message' => 'Logged out successfully.']);
+        return response()->json(['success' => true, 'message' => 'Logged out successfully.']);
+    }
+
+    private function authResponse(User $user, string $token, string $message, int $status = 200): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => [
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user->only(['id', 'first_name', 'middle_name', 'last_name', 'suffix', 'email', 'role', 'status', 'email_verified_at']),
+            ],
+        ], $status);
     }
 }
