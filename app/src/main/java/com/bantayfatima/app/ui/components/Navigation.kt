@@ -23,8 +23,7 @@ import com.bantayfatima.app.ui.theme.Spacing
 /**
  * Branded top bar for the landing experience.
  *
- * Light rather than a full-bleed navy block: the previous dark header consumed a
- * quarter of the screen before any content appeared.
+ * Deep navy institutional header shared across the landing experience.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +43,7 @@ fun BantayFatimaTopBar(
                 Text(
                     text = "Bantay Fatima",
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.semantics { heading() },
@@ -53,10 +52,10 @@ fun BantayFatimaTopBar(
         },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            scrolledContainerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.secondary,
-            actionIconContentColor = MaterialTheme.colorScheme.secondary,
+            containerColor = MaterialTheme.colorScheme.secondary,
+            scrolledContainerColor = MaterialTheme.colorScheme.secondary,
+            titleContentColor = MaterialTheme.colorScheme.onSecondary,
+            actionIconContentColor = MaterialTheme.colorScheme.onSecondary,
         ),
         scrollBehavior = scrollBehavior,
     )
@@ -88,7 +87,7 @@ fun ScreenTopBar(
                     Text(
                         text = it,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = .78f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -104,11 +103,11 @@ fun ScreenTopBar(
         },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            scrolledContainerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.secondary,
-            navigationIconContentColor = MaterialTheme.colorScheme.secondary,
-            actionIconContentColor = MaterialTheme.colorScheme.secondary,
+            containerColor = MaterialTheme.colorScheme.secondary,
+            scrolledContainerColor = MaterialTheme.colorScheme.secondary,
+            titleContentColor = MaterialTheme.colorScheme.onSecondary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSecondary,
+            actionIconContentColor = MaterialTheme.colorScheme.onSecondary,
         ),
         scrollBehavior = scrollBehavior,
     )
@@ -154,7 +153,6 @@ fun BantayFatimaBottomNavigation(
                     if (destination.emphasized) {
                         Box(
                             modifier = Modifier
-                                .offset(y = (-10).dp)
                                 .size(50.dp)
                                 .shadow(5.dp, CircleShape)
                                 .clip(CircleShape)
@@ -173,8 +171,8 @@ fun BantayFatimaBottomNavigation(
                 },
                 label = {
                     Text(
-                        text = if (destination.emphasized) destination.label.replace(" a ", " a\n") else destination.label,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = if (destination.emphasized) 8.sp else 10.sp, lineHeight = 9.sp),
+                        text = if (destination.emphasized) destination.label.replace(" a ", "\n") else destination.label,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, lineHeight = 11.sp),
                         maxLines = if (destination.emphasized) 2 else 1,
                         overflow = TextOverflow.Ellipsis,
                     )

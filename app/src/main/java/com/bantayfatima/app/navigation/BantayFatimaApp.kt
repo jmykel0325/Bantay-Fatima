@@ -116,6 +116,12 @@ fun BantayFatimaApp(modifier: Modifier = Modifier, authViewModel: AuthViewModel 
 private fun GuestApp(state: AuthUiState, auth: AuthViewModel) {
     val nav = rememberNavController()
     var showAuthSheet by remember { mutableStateOf(false) }
+    // Credential Manager draws the account chooser over the hosting activity, so the
+    // activity context is what it needs, not the application context.
+    val activity = LocalContext.current
+    // A successful Google exchange flips the session to Resident, which swaps this
+    // whole subtree for ResidentApp; nothing else has to be navigated.
+    val signInWithGoogle: () -> Unit = { auth.signInWithGoogle(activity) { showAuthSheet = false } }
 
     val destinations = listOf(
         NavDestination(Routes.HOME, "Home", Icons.Filled.Home, Icons.Outlined.Home),
@@ -164,6 +170,7 @@ private fun GuestApp(state: AuthUiState, auth: AuthViewModel) {
                     state = state,
                     onBack = nav::popBackStack,
                     onLogin = { email, password, remember -> auth.login(email, password, remember) {} },
+                    onGoogle = signInWithGoogle,
                     onRegister = { nav.navigate(Routes.REGISTER) },
                     onForgot = { nav.navigate(Routes.FORGOT) },
                     onDismissError = auth::clearError,
@@ -174,6 +181,7 @@ private fun GuestApp(state: AuthUiState, auth: AuthViewModel) {
                     state = state,
                     onBack = nav::popBackStack,
                     onSubmit = { request -> auth.requestRegistration(request) { nav.navigate(Routes.VERIFY) } },
+                    onGoogle = signInWithGoogle,
                     onDismissError = auth::clearError,
                 )
             }
@@ -201,6 +209,10 @@ private fun GuestApp(state: AuthUiState, auth: AuthViewModel) {
                 showAuthSheet = false
                 nav.navigate(Routes.REGISTER)
             },
+            onGoogle = signInWithGoogle,
+            googleBusy = state.googleBusy,
+            error = state.error,
+            onDismissError = auth::clearError,
         )
     }
 }
@@ -212,10 +224,12 @@ private fun GuestApp(state: AuthUiState, auth: AuthViewModel) {
 @Composable
 private fun ResidentApp(user: UserDto, auth: AuthViewModel) {
     val nav = rememberNavController()
+    // Report is placed centre and emphasised: it is the one action the whole
+    // application exists for, and the other four are places you go afterwards.
     val destinations = listOf(
         NavDestination(Routes.RESIDENT_HOME, "Home", Icons.Filled.Home, Icons.Outlined.Home),
-        NavDestination(Routes.REPORT, "Report", Icons.Filled.AddCircle, Icons.Outlined.AddCircle),
         NavDestination(Routes.MY_REPORTS, "My Reports", Icons.Filled.Description, Icons.Outlined.Description),
+        NavDestination(Routes.REPORT, "Report", Icons.Filled.Add, Icons.Outlined.Add, emphasized = true),
         NavDestination(Routes.UPDATES, "Updates", Icons.Filled.Campaign, Icons.Outlined.Campaign),
         NavDestination(Routes.RESIDENT_PROFILE, "Profile", Icons.Filled.Person, Icons.Outlined.Person),
     )
@@ -227,11 +241,31 @@ private fun ResidentApp(user: UserDto, auth: AuthViewModel) {
     ) { padding ->
         NavHost(nav, Routes.RESIDENT_HOME, Modifier.padding(padding)) {
             composable(Routes.RESIDENT_HOME) {
-                ResidentDashboardScreen(user) { nav.navigateTop(Routes.REPORT) }
+                ResidentDashboardScreen(
+                    user = user,
+                    onCreateReport = { nav.navigateTop(Routes.REPORT) },
+                    onMyReports = { nav.navigateTop(Routes.MY_REPORTS) },
+                    onUpdates = { nav.navigateTop(Routes.UPDATES) },
+                    onEmergency = { nav.navigate(Routes.EMERGENCY) },
+                    onProfile = { nav.navigateTop(Routes.RESIDENT_PROFILE) },
+                    onAssistant = { nav.navigate(Routes.ASSISTANT) },
+                    onHowItWorks = { nav.navigate(Routes.ABOUT) },
+                    onSupport = { nav.navigate(Routes.ABOUT) },
+                )
             }
-            composable(Routes.REPORT) { CreateReportPlaceholder(nav::popBackStack) }
-            composable(Routes.MY_REPORTS) { MyReportsPlaceholder() }
+            composable(Routes.REPORT) {
+                ReportProblemScreen(
+                    onBack = nav::popBackStack,
+                    onHome = { nav.navigateTop(Routes.RESIDENT_HOME) },
+                    onMyReports = { nav.navigateTop(Routes.MY_REPORTS) },
+                )
+            }
+            composable(Routes.MY_REPORTS) { MyReportsScreen() }
             composable(Routes.UPDATES) { PublicUpdatesScreen() }
+            // Reachable from the dashboard's Emergency tile and its advisory strip.
+            composable(Routes.EMERGENCY) { PublicEmergencyScreen() }
+            composable(Routes.ABOUT) { PublicAboutScreen() }
+            composable(Routes.ASSISTANT) { AssistantScreen(nav::popBackStack) }
             composable(Routes.RESIDENT_PROFILE) { ProfileScreen(user, auth::logout) }
         }
     }

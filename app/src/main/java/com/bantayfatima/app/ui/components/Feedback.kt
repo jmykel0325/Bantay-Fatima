@@ -2,11 +2,16 @@ package com.bantayfatima.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -205,8 +210,10 @@ fun ErrorBanner(message: String?, onDismiss: () -> Unit, modifier: Modifier = Mo
 /**
  * Shown when a guest taps a feature that needs an account.
  *
- * A sheet rather than a silent redirect, so the resident understands why the
- * screen changed and can decline.
+ * A sheet rather than a silent redirect, so the resident understands why the screen
+ * changed and can decline. It states what an account is actually for before asking
+ * for one, and offers Google first: that route needs no form and no e-mail code, and
+ * it resolves by itself to a sign-in for a resident who already registered.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -214,25 +221,33 @@ fun AuthenticationRequiredSheet(
     onDismiss: () -> Unit,
     onLogin: () -> Unit,
     onRegister: () -> Unit,
+    onGoogle: () -> Unit,
+    googleBusy: Boolean = false,
+    error: String? = null,
+    onDismissError: () -> Unit = {},
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        // Opened at full height, and scrollable, so the actions are never below the
+        // fold waiting to be dragged into view on a short screen.
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
         Column(
             Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = Spacing.lg)
-                .padding(bottom = Spacing.xxl),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(bottom = Spacing.xl),
             verticalArrangement = Arrangement.spacedBy(Spacing.sm),
         ) {
             Box(
                 Modifier
                     .size(58.dp)
                     .clip(RoundedCornerShape(29.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -242,18 +257,59 @@ fun AuthenticationRequiredSheet(
                     modifier = Modifier.size(26.dp),
                 )
             }
-            Text("Sign in required", style = MaterialTheme.typography.headlineSmall)
             Text(
-                text = "Log in or create a resident account to submit and track a community report.",
+                text = "Sign in required",
+                style = MaterialTheme.typography.headlineSmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = "A resident account lets the barangay reach you about what you send.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(Spacing.xs))
-            PrimaryButton("Log In", onClick = onLogin)
-            SecondaryButton("Create Account", onClick = onRegister)
-            TextLink("Not Now", onClick = onDismiss)
+
+            Spacer(Modifier.height(Spacing.xxs))
+            SheetBenefit(Icons.Filled.PhotoCamera, "Submit a concern with photos and location")
+            SheetBenefit(Icons.Filled.Timeline, "Follow every report you file until it is resolved")
+            SheetBenefit(Icons.Filled.Notifications, "Get replies from barangay staff")
+
+            if (error != null) {
+                Spacer(Modifier.height(Spacing.xxs))
+                ErrorBanner(error, onDismissError)
+            }
+
+            Spacer(Modifier.height(Spacing.xxs))
+            GoogleAuthButton("Continue with Google", loading = googleBusy, onClick = onGoogle)
+            LabelledDivider("or use your email")
+            PrimaryButton("Log In", enabled = !googleBusy, onClick = onLogin)
+            SecondaryButton("Create Account", enabled = !googleBusy, onClick = onRegister)
+            TextLink("Not Now", modifier = Modifier.align(Alignment.CenterHorizontally), onClick = onDismiss)
         }
+    }
+}
+
+/** One reason-to-register line inside [AuthenticationRequiredSheet]. */
+@Composable
+private fun SheetBenefit(icon: ImageVector, text: String) {
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(18.dp),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

@@ -62,7 +62,7 @@ fun HeroCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(HeroShape)
-            .background(Brush.linearGradient(listOf(BantayNavy, BantayNavyDeep, BantayGreenDark))),
+            .background(Brush.linearGradient(listOf(BantayNavy, BantayNavyDeep, BantayIndigo))),
     ) {
         Column(Modifier.padding(Spacing.xl)) {
             AuthorityLockup(sealSize = 42.dp, onDark = true)
@@ -71,13 +71,13 @@ fun HeroCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
+                color = BantayWhite,
             )
             Spacer(Modifier.height(Spacing.sm))
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.85f),
+                color = BantayWhite.copy(alpha = 0.85f),
             )
 
             Spacer(Modifier.height(Spacing.xl))
@@ -85,8 +85,8 @@ fun HeroCard(
                 onClick = onPrimary,
                 shape = ButtonShape,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BantayGreen,
-                    contentColor = Color.White,
+                    containerColor = BantayPrimary,
+                    contentColor = BantayWhite,
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -105,7 +105,7 @@ fun HeroCard(
                 Text(
                     text = secondaryLabel,
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.White.copy(alpha = 0.92f),
+                    color = BantayWhite.copy(alpha = 0.92f),
                 )
             }
         }

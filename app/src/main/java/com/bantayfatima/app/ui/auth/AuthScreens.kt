@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -25,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bantayfatima.app.data.model.RegistrationRequest
+import com.bantayfatima.app.data.remote.isGoogleSignInConfigured
 import com.bantayfatima.app.ui.components.*
 import com.bantayfatima.app.ui.theme.Spacing
 
@@ -105,6 +108,7 @@ fun LoginScreen(
     state: AuthUiState,
     onBack: () -> Unit,
     onLogin: (String, String, Boolean) -> Unit,
+    onGoogle: () -> Unit,
     onRegister: () -> Unit,
     onForgot: () -> Unit,
     onDismissError: () -> Unit,
@@ -112,40 +116,72 @@ fun LoginScreen(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var keepSignedIn by rememberSaveable { mutableStateOf(true) }
+    // The address is only judged once the resident has moved on from the field.
+    // Complaining about "j" while someone types "juan@..." is noise, not help.
+    var emailFocused by remember { mutableStateOf(false) }
+    var emailVisited by rememberSaveable { mutableStateOf(false) }
 
-    val emailTouched = email.isNotBlank()
     val emailValid = email.trim().contains("@")
-    val canSubmit = email.isNotBlank() && password.isNotBlank()
+    val emailError = if (emailVisited && !emailFocused && email.isNotBlank() && !emailValid) {
+        "Enter a valid email address."
+    } else {
+        null
+    }
+    val canSubmit = email.isNotBlank() && password.isNotBlank() && !state.googleBusy
+    val submit = { if (canSubmit) onLogin(email, password, keepSignedIn) }
 
     AuthScaffold(title = "Sign In", onBack = onBack) {
         Spacer(Modifier.height(Spacing.xs))
-        BantayFatimaLogo(size = 72.dp, modifier = Modifier.align(Alignment.CenterHorizontally))
+        BantayFatimaLogo(size = 64.dp, modifier = Modifier.align(Alignment.CenterHorizontally))
 
-        Spacer(Modifier.height(Spacing.lg))
+        Spacer(Modifier.height(Spacing.md))
         Text(
             text = "Welcome Back",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.semantics { heading() },
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { heading() },
         )
         Spacer(Modifier.height(Spacing.xxs))
         Text(
             text = "Sign in to access your Bantay Fatima account.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
         )
 
         Spacer(Modifier.height(Spacing.lg))
         ErrorBanner(state.error, onDismissError)
         if (state.error != null) Spacer(Modifier.height(Spacing.sm))
 
+        // Offered first: a resident who registered with Google is returned to their
+        // account in one tap, with no password to recall.
+        GoogleAuthButton(
+            text = "Continue with Google",
+            loading = state.googleBusy,
+            enabled = !state.busy,
+            onClick = onGoogle,
+        )
+        if (isGoogleSignInConfigured) {
+            Spacer(Modifier.height(Spacing.md))
+            LabelledDivider("or sign in with email")
+            Spacer(Modifier.height(Spacing.md))
+        }
+
         AppTextField(
             value = email,
             onValueChange = { email = it },
             label = "Gmail Address",
             leadingIcon = Icons.Filled.Email,
-            errorMessage = if (emailTouched && !emailValid) "Enter a valid email address." else null,
+            errorMessage = emailError,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+            modifier = Modifier.onFocusChanged { focus ->
+                if (focus.hasFocus) emailVisited = true
+                emailFocused = focus.hasFocus
+            },
         )
         Spacer(Modifier.height(Spacing.sm))
         PasswordField(
@@ -153,6 +189,7 @@ fun LoginScreen(
             onValueChange = { password = it },
             label = "Password",
             imeAction = ImeAction.Done,
+            keyboardActions = KeyboardActions(onDone = { submit() }),
         )
 
         Spacer(Modifier.height(Spacing.xs))
@@ -179,7 +216,7 @@ fun LoginScreen(
             text = "Sign In",
             loading = state.busy,
             enabled = canSubmit,
-            onClick = { onLogin(email, password, keepSignedIn) },
+            onClick = submit,
         )
 
         Spacer(Modifier.height(Spacing.lg))
@@ -190,7 +227,12 @@ fun LoginScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
         Spacer(Modifier.height(Spacing.xs))
-        SecondaryButton("Create a Resident Account", icon = Icons.Filled.PersonAdd, onClick = onRegister)
+        SecondaryButton(
+            text = "Create a Resident Account",
+            icon = Icons.Filled.PersonAdd,
+            enabled = !state.busy && !state.googleBusy,
+            onClick = onRegister,
+        )
 
         Spacer(Modifier.height(Spacing.lg))
         Row(
@@ -219,6 +261,7 @@ fun RegistrationScreen(
     state: AuthUiState,
     onBack: () -> Unit,
     onSubmit: (RegistrationRequest) -> Unit,
+    onGoogle: () -> Unit,
     onDismissError: () -> Unit,
 ) {
     var step by rememberSaveable { mutableIntStateOf(1) }
@@ -253,19 +296,27 @@ fun RegistrationScreen(
 
         if (step == 1) {
             Text(
-                text = "Enter your name as registered with the barangay.",
+                text = "This takes about a minute. Use your name as it is registered with the barangay.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(Modifier.height(Spacing.md))
+            Spacer(Modifier.height(Spacing.lg))
+            FieldGroupLabel("Your name")
+            Spacer(Modifier.height(Spacing.sm))
 
             AppTextField(first, { first = it }, "First Name", leadingIcon = Icons.Filled.Person)
             Spacer(Modifier.height(Spacing.sm))
-            AppTextField(middle, { middle = it }, "Middle Name (optional)", leadingIcon = Icons.Filled.Person)
+            AppTextField(middle, { middle = it }, "Middle Name (optional)")
             Spacer(Modifier.height(Spacing.sm))
-            AppTextField(last, { last = it }, "Last Name", leadingIcon = Icons.Filled.Person)
-            Spacer(Modifier.height(Spacing.sm))
-            AppTextField(suffix, { suffix = it }, "Suffix (optional)", leadingIcon = Icons.Filled.Person)
+            // Paired on one row because a suffix is short and belongs with the family
+            // name; it also keeps the form from reading as six identical boxes.
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                AppTextField(last, { last = it }, "Last Name", modifier = Modifier.weight(1.6f))
+                AppTextField(suffix, { suffix = it }, "Suffix", modifier = Modifier.weight(1f))
+            }
+
+            Spacer(Modifier.height(Spacing.lg))
+            FieldGroupLabel("How we reach you")
             Spacer(Modifier.height(Spacing.sm))
             AppTextField(
                 value = phoneNumber,
@@ -273,7 +324,7 @@ fun RegistrationScreen(
                 label = "Mobile Number",
                 leadingIcon = Icons.Filled.Phone,
                 errorMessage = if (phoneNumber.isNotBlank() && !phoneValid) "Enter a valid Philippine mobile number, such as 0917 123 4567." else null,
-                helperText = if (phoneNumber.isBlank()) "Required for your resident profile. Verification is sent to Gmail only." else null,
+                helperText = "Kept on your resident profile. Codes are never sent by text.",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
             )
             Spacer(Modifier.height(Spacing.sm))
@@ -283,12 +334,32 @@ fun RegistrationScreen(
                 label = "Gmail Address",
                 leadingIcon = Icons.Filled.Email,
                 errorMessage = if (email.isNotBlank() && !gmailValid) "Use a valid Gmail address ending in @gmail.com." else null,
-                helperText = if (email.isBlank()) "The verification code will be sent here." else null,
+                helperText = "Your verification code is sent here.",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Done),
             )
 
             Spacer(Modifier.height(Spacing.xl))
-            PrimaryButton("Continue", enabled = stepOneValid) { step = 2 }
+            PrimaryButton("Continue", enabled = stepOneValid && !state.googleBusy) { step = 2 }
+
+            if (isGoogleSignInConfigured) {
+                Spacer(Modifier.height(Spacing.md))
+                LabelledDivider("or")
+                Spacer(Modifier.height(Spacing.md))
+                GoogleAuthButton(
+                    text = "Sign up with Google",
+                    loading = state.googleBusy,
+                    enabled = !state.busy,
+                    onClick = onGoogle,
+                )
+                Spacer(Modifier.height(Spacing.xs))
+                Text(
+                    text = "Google confirms your Gmail address for us, so there is no form and no code to enter. If you already have an account, this signs you into it.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         } else {
             Text(
                 text = "Choose a password to protect your Bantay Fatima account.",
@@ -337,6 +408,16 @@ fun RegistrationScreen(
             TextLink("Back to personal information", modifier = Modifier.align(Alignment.CenterHorizontally)) { step = 1 }
         }
     }
+}
+
+/** Section heading inside a form, so a long list of inputs reads as groups. */
+@Composable
+private fun FieldGroupLabel(text: String) {
+    Text(
+        text = text.uppercase(),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable

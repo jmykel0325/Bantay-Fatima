@@ -1,10 +1,14 @@
 package com.bantayfatima.app.ui.auth
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bantayfatima.app.data.model.RegistrationRequest
 import com.bantayfatima.app.data.model.UserDto
+import com.bantayfatima.app.data.remote.GoogleIdentityClient
+import com.bantayfatima.app.data.remote.GoogleSignInCancelled
 import com.bantayfatima.app.data.repository.AuthRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +25,8 @@ sealed interface SessionState {
 data class AuthUiState(
     val session: SessionState = SessionState.Loading,
     val busy: Boolean = false,
+    /** Tracked apart from [busy] so the spinner appears on the button that was tapped. */
+    val googleBusy: Boolean = false,
     val error: String? = null,
     val verificationEmail: String? = null,
     val maskedEmail: String? = null,
@@ -39,6 +45,41 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
 
     fun login(email: String, password: String, remember: Boolean, onSuccess: () -> Unit) = launch {
         repository.login(email, password, remember).fold({ setSession(it); onSuccess() }, ::showError)
+    }
+
+    /**
+     * One entry point for both "Continue with Google" and "Sign up with Google".
+     *
+     * The device only proves which Gmail address the resident controls; the API
+     * decides whether that address already has an account. An existing account is
+     * signed straight in, a new address is registered and signed in, and either way
+     * the resident lands on their dashboard without an e-mail code step.
+     *
+     * [context] must be the activity, because Credential Manager shows the account
+     * chooser over it.
+     */
+    fun signInWithGoogle(context: Context, onSuccess: (isNewAccount: Boolean) -> Unit) = viewModelScope.launch {
+        _state.value = _state.value.copy(googleBusy = true, error = null)
+        try {
+            GoogleIdentityClient(context).requestIdToken().fold(
+                onSuccess = { idToken ->
+                    repository.googleSignIn(idToken).fold({ auth ->
+                        setSession(auth.user)
+                        onSuccess(auth.isNewAccount)
+                    }, ::showError)
+                },
+                onFailure = { error ->
+                    // Dismissing the chooser is a choice, not a problem to report.
+                    if (error !== GoogleSignInCancelled) showError(error)
+                },
+            )
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: Exception) {
+            showError(failure)
+        } finally {
+            _state.value = _state.value.copy(googleBusy = false)
+        }
     }
 
     fun requestRegistration(request: RegistrationRequest, onCodeSent: () -> Unit) = launch {
@@ -63,9 +104,25 @@ class AuthViewModel(private val repository: AuthRepository = AuthRepository()) :
     fun clearError() { _state.value = _state.value.copy(error = null) }
     fun logout() = viewModelScope.launch { repository.logout(); _state.value = AuthUiState(session = SessionState.Guest) }
 
+    /**
+     * Runs an authentication step with the busy flag held for its duration.
+     *
+     * The catch is deliberate and must stay. An exception thrown here propagates out
+     * of the coroutine and terminates the process, which the resident experiences as
+     * the application closing and restarting itself mid-login. A failure belongs in
+     * the error banner, never in a crash.
+     */
     private fun launch(block: suspend () -> Unit) = viewModelScope.launch {
         _state.value = _state.value.copy(busy = true, error = null)
-        try { block() } finally { _state.value = _state.value.copy(busy = false) }
+        try {
+            block()
+        } catch (cancellation: CancellationException) {
+            throw cancellation // Normal scope teardown, not a failure to report.
+        } catch (failure: Exception) {
+            showError(failure)
+        } finally {
+            _state.value = _state.value.copy(busy = false)
+        }
     }
 
     private fun setSession(user: UserDto?) {

@@ -31,6 +31,23 @@ val debugApiBaseUrl: String =
 // Replace with the real HTTPS domain when the production API is deployed.
 val releaseApiBaseUrl = "https://your-production-domain.example/api/"
 
+/**
+ * OAuth *web* client ID used by Google sign-in.
+ *
+ * Create it in Google Cloud Console (APIs & Services -> Credentials -> OAuth client ID
+ * -> Web application) and add it to `local.properties`, which is untracked:
+ *
+ *     bantayfatima.googleWebClientId=1234567890-abcdef.apps.googleusercontent.com
+ *
+ * The same ID must be configured on the Laravel side, because the server verifies
+ * that the `aud` claim of the ID token matches it. This is a public client
+ * identifier, not a secret, but it stays out of version control so each developer
+ * points at their own Google Cloud project. When absent the app still builds and
+ * runs; the Google buttons simply explain that sign-in is unavailable.
+ */
+val googleWebClientId: String =
+    localProperties.getProperty("bantayfatima.googleWebClientId")?.trim().orEmpty()
+
 android {
     namespace = "com.bantayfatima.app"
     compileSdk {
@@ -45,6 +62,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildTypes {
@@ -85,6 +104,12 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.core.splashscreen)
+
+    // Google sign-in (Credential Manager). No Firebase; the ID token is exchanged
+    // for a Sanctum token by the Laravel API.
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
 
     // ViewModel + lifecycle-aware state collection in Compose
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

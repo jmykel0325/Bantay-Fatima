@@ -15,16 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bantayfatima.app.R
-import com.bantayfatima.app.ui.theme.BantayGreen
+import com.bantayfatima.app.ui.theme.BantayPrimary
+import com.bantayfatima.app.ui.theme.BantaySky
 import com.bantayfatima.app.ui.theme.BantayNavy
 import com.bantayfatima.app.ui.theme.BantayNavyDeep
+import com.bantayfatima.app.ui.theme.BantayWhite
 
 @Composable
 fun SplashScreen(modifier: Modifier = Modifier) {
@@ -50,20 +51,20 @@ fun SplashScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.sizeIn(minWidth = 92.dp, minHeight = 92.dp, maxWidth = 124.dp, maxHeight = 124.dp).fillMaxWidth(.34f),
             )
             Spacer(Modifier.height(22.dp))
-            Text("Bantay Fatima", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center)
+            Text("Bantay Fatima", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BantayWhite, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
-            Text("Report. Track. Stay Informed.", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = .82f), textAlign = TextAlign.Center)
+            Text("Report. Track. Stay Informed.", style = MaterialTheme.typography.bodyMedium, color = BantayWhite.copy(alpha = .82f), textAlign = TextAlign.Center)
             Spacer(Modifier.height(16.dp))
-            Box(Modifier.width(34.dp).height(3.dp).background(Color(0xFFC9A227), CircleShape))
+            Box(Modifier.width(34.dp).height(3.dp).background(BantaySky, CircleShape))
         }
 
         Column(
             modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 24.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            CircularProgressIndicator(color = BantayGreen, trackColor = Color.White.copy(alpha = .18f), strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
+            CircularProgressIndicator(color = BantayPrimary, trackColor = BantayWhite.copy(alpha = .18f), strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
             Spacer(Modifier.height(18.dp))
-            Text("Barangay Fatima · General Santos City", style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = .62f), textAlign = TextAlign.Center)
+            Text("Barangay Fatima · General Santos City", style = MaterialTheme.typography.labelMedium, color = BantayWhite.copy(alpha = .62f), textAlign = TextAlign.Center)
         }
     }
 }

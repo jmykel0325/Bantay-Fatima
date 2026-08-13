@@ -7,13 +7,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.bantayfatima.app.R
 import com.bantayfatima.app.ui.theme.OverlineLabel
 import com.bantayfatima.app.ui.theme.Spacing
+import com.bantayfatima.app.ui.theme.BantayWhite
 
 /**
  * Approved brand marks, copied from the Bantay Fatima Laravel application so the
@@ -56,8 +56,8 @@ fun AuthorityLockup(
     sealSize: Dp = 44.dp,
     onDark: Boolean = false,
 ) {
-    val title = if (onDark) Color.White else MaterialTheme.colorScheme.secondary
-    val subtitle = if (onDark) Color.White.copy(alpha = 0.74f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val title = if (onDark) BantayWhite else MaterialTheme.colorScheme.secondary
+    val subtitle = if (onDark) BantayWhite.copy(alpha = 0.74f) else MaterialTheme.colorScheme.onSurfaceVariant
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,

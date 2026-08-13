@@ -13,7 +13,16 @@ data class UserDto(
     val role: String,
     val status: String,
 )
-data class AuthData(val token: String, @SerializedName("token_type") val tokenType: String, val user: UserDto)
+data class AuthData(
+    val token: String,
+    @SerializedName("token_type") val tokenType: String,
+    val user: UserDto,
+    /**
+     * True when this Google sign-in created the account rather than matching an
+     * existing one. Only the welcome message differs; both cases arrive signed in.
+     */
+    @SerializedName("is_new_account") val isNewAccount: Boolean = false,
+)
 data class LoginRequest(val email: String, val password: String, val remember: Boolean, @SerializedName("device_name") val deviceName: String = "Bantay Fatima Android")
 data class RegistrationRequest(
     @SerializedName("first_name") val firstName: String,
@@ -25,6 +34,17 @@ data class RegistrationRequest(
     val password: String,
     @SerializedName("password_confirmation") val passwordConfirmation: String,
     val terms: Boolean = true,
+)
+/**
+ * Google sign-in exchange.
+ *
+ * The device sends only the ID token. The API verifies it with Google, then either
+ * signs in the resident whose Gmail address matches an existing account or creates
+ * one from the verified Google profile.
+ */
+data class GoogleAuthRequest(
+    @SerializedName("id_token") val idToken: String,
+    @SerializedName("device_name") val deviceName: String = "Bantay Fatima Android",
 )
 data class VerificationRequest(val email: String, val code: String, @SerializedName("device_name") val deviceName: String = "Bantay Fatima Android")
 data class EmailRequest(val email: String)

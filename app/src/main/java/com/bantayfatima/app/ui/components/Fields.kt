@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -52,6 +53,7 @@ fun AppTextField(
     errorMessage: String? = null,
     helperText: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     enabled: Boolean = true,
 ) {
@@ -67,6 +69,7 @@ fun AppTextField(
             singleLine = true,
             shape = FieldShape,
             keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             visualTransformation = visualTransformation,
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -101,6 +104,7 @@ fun PasswordField(
     errorMessage: String? = null,
     helperText: String? = null,
     imeAction: androidx.compose.ui.text.input.ImeAction = androidx.compose.ui.text.input.ImeAction.Next,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     var visible by rememberSaveable { mutableStateOf(false) }
     AppTextField(
@@ -112,6 +116,7 @@ fun PasswordField(
         errorMessage = errorMessage,
         helperText = helperText,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = imeAction),
+        keyboardActions = keyboardActions,
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
             IconButton(onClick = { visible = !visible }) {

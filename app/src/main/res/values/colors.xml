@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Platform-side colours only: the window splash background and the launcher
+    icon backdrop. Everything the Compose interface draws comes from
+    ui/theme/Color.kt, and these values must be kept in step with it so the
+    platform splash and the Compose splash do not differ for a frame.
+-->
 <resources>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 
     <!-- Bantay Fatima brand -->
-    <color name="bantay_navy">#FF0B2D4D</color>
-    <color name="bantay_green">#FF0F8877</color>
-    <color name="bantay_gold">#FFC9A227</color>
-    <color name="bantay_background">#FFF4F7F9</color>
+    <color name="bantay_navy">#FF071A2F</color>
+    <color name="bantay_primary">#FF447FC2</color>
+    <color name="bantay_sky">#FF73B1DA</color>
+    <color name="bantay_background">#FFF5F8FA</color>
 
     <!-- Adaptive launcher icon backdrop, behind the logo foreground. -->
-    <color name="ic_launcher_background">#FFF4F7F9</color>
+    <color name="ic_launcher_background">#FFF5F8FA</color>
 </resources>

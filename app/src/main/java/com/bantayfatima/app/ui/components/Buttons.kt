@@ -11,8 +11,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.bantayfatima.app.R
+import com.bantayfatima.app.data.remote.isGoogleSignInConfigured
 import com.bantayfatima.app.ui.theme.ButtonShape
 import com.bantayfatima.app.ui.theme.ControlHeight
 import com.bantayfatima.app.ui.theme.Spacing
@@ -81,9 +85,12 @@ fun SecondaryButton(
         enabled = enabled,
         shape = ButtonShape,
         interactionSource = interaction,
-        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.secondary,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         contentPadding = PaddingValues(horizontal = Spacing.lg),
         modifier = modifier
@@ -121,6 +128,62 @@ fun TonalButton(
             Icon(it, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(Spacing.xs))
         }
+        Text(text, style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+/**
+ * "Continue with Google" style button.
+ *
+ * Renders nothing when the build carries no OAuth client ID, so a resident is never
+ * offered a route that cannot complete. The mark keeps Google's own colours, which
+ * is why it is drawn without a tint.
+ */
+@Composable
+fun GoogleAuthButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    loading: Boolean = false,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    if (!isGoogleSignInConfigured) return
+
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.98f else 1f, label = "googleButtonScale")
+
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled && !loading,
+        shape = ButtonShape,
+        interactionSource = interaction,
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        contentPadding = PaddingValues(horizontal = Spacing.lg),
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = ControlHeight)
+            .scale(scale),
+    ) {
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.ic_google),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+        Spacer(Modifier.width(Spacing.sm))
         Text(text, style = MaterialTheme.typography.labelLarge)
     }
 }
