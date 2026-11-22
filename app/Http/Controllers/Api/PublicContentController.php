@@ -23,7 +23,7 @@ class PublicContentController extends Controller
 
     public function emergency(): JsonResponse
     {
-        $items = EmergencyHotline::where('is_active', true)->orderBy('sort_order')->get();
+        $items = EmergencyHotline::where('is_active', true)->where('status', 'active')->where('show_in_resident_app', true)->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END")->orderBy('group')->orderBy('organization')->get(['id','group as service_category','organization','hotline as primary_hotline','alternative_number','hours as availability','coverage_area','address as office_address','icon_type as icon','description','priority']);
         return response()->json(['success' => true, 'message' => 'Emergency information retrieved.', 'data' => $items]);
     }
 

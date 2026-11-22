@@ -88,6 +88,50 @@ class AdminManagementTest extends TestCase
         $this->assertSame('active', $admin->fresh()->status);
     }
 
+    public function test_admin_can_update_user_details_and_set_new_password(): void
+    {
+        $admin = $this->user('admin');
+        $staff = $this->user('staff', 'staff@example.com', '09171234568');
+        $payload = ['first_name'=>'Maria','middle_name'=>'Santos','last_name'=>'Cruz','suffix'=>'Jr.','email'=>'maria@example.com','phone_number'=>'0917 555 0201','role'=>'staff','position'=>'Enumerator','department'=>'Field Ops','password'=>'NewPassword1','password_confirmation'=>'NewPassword1'];
+
+        $this->actingAs($admin)->patch(route('admin.users.update', $staff), $payload)->assertRedirect();
+        $this->assertDatabaseHas('users', ['id'=>$staff->id,'first_name'=>'Maria','middle_name'=>'Santos','last_name'=>'Cruz','suffix'=>'Jr.','email'=>'maria@example.com','phone_number'=>'+639175550201','position'=>'Enumerator','department'=>'Field Ops']);
+        $this->assertTrue(password_verify('NewPassword1', $staff->fresh()->password));
+        $this->assertDatabaseHas(AuditLog::class, ['action'=>'user.updated','entity_id'=>$staff->id]);
+
+        $other = $this->user('resident', 'resident9@example.com', '+639171234567');
+        $this->actingAs($admin)->patch(route('admin.users.update', $staff), ['first_name'=>'Maria','last_name'=>'Cruz','email'=>'admin@example.com','phone_number'=>'0917 123 4567','role'=>'staff'])->assertSessionHasErrors(['email','phone_number']);
+        $this->assertDatabaseHas('users', ['id'=>$other->id]);
+    }
+
+    public function test_admin_cannot_change_own_role_or_demote_last_active_admin(): void
+    {
+        $admin = $this->user('admin');
+        $this->actingAs($admin)->patch(route('admin.users.update', $admin), ['first_name'=>'John','last_name'=>'Doe','email'=>'admin@example.com','phone_number'=>'09171234567','role'=>'resident'])->assertStatus(422);
+        $this->assertSame('admin', $admin->fresh()->role);
+    }
+
+    public function test_admin_can_delete_and_restore_users_but_not_self_or_last_active_admin(): void
+    {
+        $admin = $this->user('admin');
+        $staff = $this->user('staff', 'staff@example.com', '09171234568');
+        $resident = $this->user('resident', 'resident1@example.com', '09171234569');
+
+        $this->actingAs($admin)->delete(route('admin.users.destroy', $admin))->assertStatus(422);
+        $this->actingAs($admin)->delete(route('admin.users.destroy', $staff))->assertRedirect();
+        $this->assertSoftDeleted('users', ['id'=>$staff->id]);
+        $this->assertDatabaseHas(AuditLog::class, ['action'=>'user.deleted','entity_id'=>$staff->id]);
+        $this->actingAs($admin)->get(route('admin.users.index'))->assertOk()->assertSee('(deleted)');
+
+        $this->actingAs($admin)->patch(route('admin.users.restore', $staff->id))->assertRedirect();
+        $this->assertDatabaseHas('users', ['id'=>$staff->id,'deleted_at'=>null]);
+        $this->assertDatabaseHas(AuditLog::class, ['action'=>'user.restored','entity_id'=>$staff->id]);
+        $this->actingAs($admin)->patch(route('admin.users.restore', $staff->id))->assertStatus(422);
+
+        $this->actingAs($admin)->delete(route('admin.users.destroy', $admin))->assertStatus(422);
+        $this->assertNotSoftDeleted('users', ['id'=>$admin->id]);
+    }
+
     public function test_admin_and_only_assigned_staff_can_view_report_photo_evidence(): void
     {
         Storage::fake('public');

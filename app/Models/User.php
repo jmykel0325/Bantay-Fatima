@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email_verified_at',
         'phone_number',
         'purok_id',
+        'block',
         'address',
         'password',
         'role',

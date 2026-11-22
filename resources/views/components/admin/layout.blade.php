@@ -1,4 +1,11 @@
 @props(['title','breadcrumbs'=>[]])
+<style>
+    [data-admin-shell], [data-admin-shell] *, [data-admin-shell] *::before, [data-admin-shell] *::after {
+        transition: none !important;
+        animation: none !important;
+        scroll-behavior: auto !important;
+    }
+</style>
 <x-layouts.app :title="$title.' — Bantay Fatima'">
 <div class="min-h-screen bg-surface" data-admin-shell>
     <div id="admin-overlay" class="fixed inset-0 z-30 hidden bg-navy/50 lg:hidden"></div>
@@ -7,9 +14,13 @@
         <nav class="mt-8 space-y-1" aria-label="Administrator navigation">
             <x-admin.sidebar-link :href="route('admin.dashboard')" label="Dashboard" icon="dashboard" :active="request()->routeIs('admin.dashboard')" />
             <x-admin.sidebar-link :href="route('admin.reports.index')" label="Community Reports" icon="reports" :active="request()->routeIs('admin.reports.*')" />
-            <x-admin.sidebar-link label="Report Map" icon="pin" disabled />
+            <x-admin.sidebar-link :href="route('admin.reports.map')" label="Report Map" icon="pin" :active="request()->routeIs('admin.reports.map')" />
             <x-admin.sidebar-link :href="route('admin.users.index')" label="User Management" icon="team" :active="request()->routeIs('admin.users.*')" />
-            @foreach(['Advisories','Emergency Information','Knowledge Base','Notifications','Analytics','Audit Logs','System Settings','Backup and Restore','My Profile'] as $item)
+            <x-admin.sidebar-link :href="route('admin.advisories.index')" label="Advisories" icon="megaphone" :active="request()->routeIs('admin.advisories.*')" />
+            <x-admin.sidebar-link :href="route('admin.hotlines.index')" label="Emergency Information" icon="phone" :active="request()->routeIs('admin.hotlines.*')" />
+            <x-admin.sidebar-link :href="route('admin.knowledge.index')" label="Knowledge Base" icon="book" :active="request()->routeIs('admin.knowledge.*')" />
+            <x-admin.sidebar-link :href="route('admin.notifications.index')" label="Notifications" icon="bell" :active="request()->routeIs('admin.notifications.*')" />
+            @foreach(['Analytics','Audit Logs','System Settings','Backup and Restore','My Profile'] as $item)
                 <x-admin.sidebar-link :label="$item" :icon="match($item) { 'Advisories' => 'megaphone', 'Emergency Information' => 'phone', 'Knowledge Base' => 'book', 'Notifications' => 'bell', 'Analytics' => 'chart', 'System Settings' => 'settings', 'Backup and Restore' => 'database', 'My Profile' => 'user', default => 'reports' }" disabled />
             @endforeach
         </nav>

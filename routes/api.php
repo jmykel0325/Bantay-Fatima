@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Resident\ResidentApiController;
 use App\Http\Controllers\Api\PublicContentController;
 use App\Http\Controllers\Api\Staff\StaffApiController;
+use App\Http\Controllers\Api\Staff\StaffActionController;
+use App\Models\DeviceToken;
 
 // Unauthenticated connectivity probe used by the Android application.
 Route::get('/health', HealthController::class)->name('api.health');
@@ -22,6 +24,7 @@ Route::prefix('public')->group(function () {
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/google', [AuthController::class, 'google'])->middleware('throttle:5,1');
     Route::post('/register/send-code', [AuthController::class, 'sendRegistrationCode'])->middleware('throttle:otp-send');
     Route::post('/register/request-code', [AuthController::class, 'sendRegistrationCode'])->middleware('throttle:otp-send');
     Route::post('/register/verify', [AuthController::class, 'verifyRegistration'])->middleware('throttle:otp-verify');
@@ -48,4 +51,11 @@ Route::middleware(['auth:sanctum', 'role:staff'])->prefix('staff')->group(functi
     Route::get('/dashboard', [StaffApiController::class, 'dashboard']);
     Route::get('/assigned-reports', [StaffApiController::class, 'assigned']);
     Route::get('/assigned-reports/{report}', [StaffApiController::class, 'show']);
+    Route::post('/assigned-reports/{report}/progress', [StaffActionController::class, 'update'])->middleware('throttle:10,1');
+    Route::get('/notifications',fn(Request $r)=>response()->json(['success'=>true,'data'=>$r->user()->notifications()->latest()->get()]));
+    Route::post('/notifications/read-all',function(Request $r){$r->user()->unreadNotifications()->update(['read_at'=>now()]);return response()->json(['success'=>true]);});
+});
+Route::middleware('auth:sanctum')->group(function(){
+    Route::post('/device-tokens',function(Request $r){$d=$r->validate(['token'=>'required|string|max:512','platform'=>'nullable|in:android']);DeviceToken::updateOrCreate(['token'=>$d['token']],['user_id'=>$r->user()->id,'platform'=>$d['platform']??'android','last_seen_at'=>now()]);return response()->json(['success'=>true]);});
+    Route::delete('/device-tokens',function(Request $r){$d=$r->validate(['token'=>'required|string|max:512']);DeviceToken::where('user_id',$r->user()->id)->where('token',$d['token'])->delete();return response()->json(['success'=>true]);});
 });

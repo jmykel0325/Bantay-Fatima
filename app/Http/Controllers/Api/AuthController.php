@@ -14,11 +14,30 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function google(Request $request): JsonResponse
+    {
+        $data=$request->validate(['id_token'=>['required','string'],'device_name'=>['nullable','string','max:100']]);
+        $clientId=config('services.google.client_id');
+        if(! $clientId) throw ValidationException::withMessages(['id_token'=>'Google sign-in is not configured on the server.']);
+        $response=Http::timeout(15)->get('https://oauth2.googleapis.com/tokeninfo',['id_token'=>$data['id_token']]);
+        $profile=$response->json();
+        if (! $response->successful()
+            || ($profile['aud'] ?? null) !== $clientId
+            || ! filter_var($profile['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            throw ValidationException::withMessages(['id_token' => 'Google could not verify this account.']);
+        }
+        $email=mb_strtolower($profile['email']);
+        $user=User::firstOrCreate(['email'=>$email],['first_name'=>$profile['given_name']??'Resident','last_name'=>$profile['family_name']??'Resident','password'=>Hash::make(str()->random(40)),'email_verified_at'=>now(),'role'=>'resident','status'=>'active']);
+        if($user->role==='admin'||$user->status!=='active') throw ValidationException::withMessages(['id_token'=>'This account is not authorized for mobile access.']);
+        $token=$user->createToken($data['device_name']??'Android device')->plainTextToken;
+        return $this->authResponse($user,$token,'Google sign-in successful.');
+    }
     public function login(LoginRequest $request): JsonResponse
     {
         $email = mb_strtolower($request->string('email')->toString());

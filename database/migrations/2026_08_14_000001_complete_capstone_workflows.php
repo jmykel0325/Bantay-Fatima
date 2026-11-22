@@ -1,0 +1,7 @@
+<?php
+use Illuminate\Database\Migrations\Migration; use Illuminate\Database\Schema\Blueprint; use Illuminate\Support\Facades\Schema;
+return new class extends Migration { public function up():void {
+Schema::create('knowledge_documents',function(Blueprint $t){$t->id();$t->string('title');$t->string('source_type')->default('document');$t->string('original_name')->nullable();$t->string('file_path')->nullable();$t->longText('content');$t->boolean('is_approved')->default(false);$t->boolean('is_indexed')->default(false);$t->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();$t->timestamp('approved_at')->nullable();$t->timestamps();$t->softDeletes();$t->index(['is_approved','is_indexed']);});
+Schema::create('knowledge_chunks',function(Blueprint $t){$t->id();$t->foreignId('knowledge_document_id')->constrained()->cascadeOnDelete();$t->unsignedInteger('position');$t->text('content');$t->text('search_text');$t->timestamps();$t->unique(['knowledge_document_id','position']);});
+Schema::create('device_tokens',function(Blueprint $t){$t->id();$t->foreignId('user_id')->constrained()->cascadeOnDelete();$t->string('token',512)->unique();$t->string('platform')->default('android');$t->timestamp('last_seen_at')->nullable();$t->timestamps();});
+} public function down():void {Schema::dropIfExists('device_tokens');Schema::dropIfExists('knowledge_chunks');Schema::dropIfExists('knowledge_documents');} };

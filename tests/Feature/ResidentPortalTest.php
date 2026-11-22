@@ -15,9 +15,8 @@ class ResidentPortalTest extends TestCase
     {
         $response = $this->get(route('home'))->assertOk()
             ->assertSee('Learn How It Works')
-            ->assertSee('Android App Coming Soon')
-            ->assertSee('Resident Mobile Application')
-            ->assertSee('Staff Mobile Application')
+            ->assertSee('Download Android App')
+            ->assertSee('Residents and authorized staff will use mobile-friendly tools')
             ->assertSee('Administrator Web Portal');
 
         $html = $response->getContent();

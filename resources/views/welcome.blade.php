@@ -477,10 +477,10 @@
                     <a href="#how-it-works" class="inline-flex min-h-[44px] w-full items-center justify-center rounded-xl bg-teal px-8 text-sm font-semibold text-white transition-colors hover:bg-teal/90 sm:w-auto">
                         Learn How It Works
                     </a>
-                    <span class="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-white/25 px-8 text-sm font-semibold text-white sm:w-auto">
+                    <a href="/downloads/bantay-fatima.apk" download class="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-white/25 px-8 text-sm font-semibold text-white sm:w-auto">
                         <span class="h-2 w-2 rounded-full bg-amber" aria-hidden="true"></span>
-                        Android App Coming Soon
-                    </span>
+                        Download Android App
+                    </a>
                 </div>
             </div>
         </section>

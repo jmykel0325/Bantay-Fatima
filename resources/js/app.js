@@ -1,4 +1,5 @@
 import './email-verification';
+import './report-map';
 
 const phoneMockupSource = document.getElementById('bantay-phone-mockup');
 const heroPhoneTarget = document.getElementById('hero-phone-mockup');

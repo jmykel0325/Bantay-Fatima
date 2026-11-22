@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\ResidentKnowledgeService;
-use App\Services\UnavailableResidentKnowledgeService;
+use App\Services\OpenRouterResidentKnowledgeService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(ResidentKnowledgeService::class, UnavailableResidentKnowledgeService::class);
+        $this->app->bind(ResidentKnowledgeService::class, OpenRouterResidentKnowledgeService::class);
     }
 
     /**

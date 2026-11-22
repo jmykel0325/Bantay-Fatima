@@ -1,0 +1,11 @@
+<?php
+namespace App\Http\Controllers\Admin;
+use App\Http\Controllers\Controller;use App\Models\KnowledgeDocument;use App\Services\KnowledgeIndexer;use App\Services\OpenRouterResidentKnowledgeService;use Illuminate\Http\Request;
+class AdminKnowledgeController extends Controller {
+ public function create(){return view('admin.knowledge.create');}
+ public function index(){return view('admin.knowledge.index',['documents'=>KnowledgeDocument::withCount('chunks')->latest()->paginate(15)]);}
+ public function store(Request $r,KnowledgeIndexer $indexer){$d=$r->validate(['title'=>'required|string|max:255','source_type'=>'required|in:document,policy,faq,advisory,hotline,service_information','content'=>'required|string|max:100000','is_approved'=>'nullable|boolean']);$duplicate=KnowledgeDocument::whereRaw('LOWER(title) = ?', [mb_strtolower(trim($d['title']))])->whereNull('deleted_at')->first();if($duplicate)return back()->withInput()->with('error','A knowledge source with this title already exists. Edit the existing source instead of creating a duplicate.');$doc=KnowledgeDocument::create([...$d,'is_approved'=>$r->boolean('is_approved'),'approved_at'=>$r->boolean('is_approved')?now():null,'created_by'=>$r->user()->id]);if($doc->is_approved)$indexer->index($doc);return back()->with('success','Knowledge source saved and indexed.');}
+ public function update(Request $r,KnowledgeDocument $knowledge,KnowledgeIndexer $indexer){$d=$r->validate(['title'=>'required|string|max:255','source_type'=>'required|in:document,policy,faq,advisory,hotline,service_information','content'=>'required|string|max:100000','is_approved'=>'nullable|boolean']);$approved=$r->boolean('is_approved');$knowledge->update([...$d,'is_approved'=>$approved,'is_indexed'=>false,'approved_at'=>$approved?now():null]);$approved?$indexer->index($knowledge):$knowledge->chunks()->delete();return back()->with('success','Knowledge source updated.');}
+ public function destroy(KnowledgeDocument $knowledge){$knowledge->delete();return back()->with('success','Knowledge source removed.');}
+ public function testRetrieval(Request $r,OpenRouterResidentKnowledgeService $rag){$d=$r->validate(['message'=>'required|string|max:2000']);return response()->json(['question'=>$d['message'],'threshold'=>config('services.rag.similarity_threshold'),'results'=>$rag->inspectRetrieval($d['message'])]);}
+}

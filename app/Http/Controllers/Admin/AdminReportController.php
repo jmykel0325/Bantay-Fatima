@@ -89,6 +89,7 @@ class AdminReportController extends Controller
     {
         return response()->streamDownload(function () use ($request) { $out=fopen('php://output','w'); fputcsv($out,['Reference','Title','Reporter','Category','Purok','Submitted','Priority','Status','Staff']); $this->filtered($request)->with(['resident','category','purok','assignedStaff'])->orderBy('id')->chunk(500,function($rows)use($out){foreach($rows as $r)fputcsv($out,[$r->reference_number,$r->title,trim($r->resident->first_name.' '.$r->resident->last_name),$r->category->name,$r->purok->name,$r->created_at,$r->priority,$r->status,$r->assignedStaff?->first_name]);}); fclose($out); }, 'bantay-fatima-reports-'.now()->format('Y-m-d').'.csv', ['Content-Type'=>'text/csv']);
     }
+    public function print(Request $request): View { return view('admin.reports.print',['reports'=>$this->filtered($request)->with(['resident','category','purok','assignedStaff'])->latest()->get(),'generatedAt'=>now()]); }
 
     private function filtered(Request $request)
     {

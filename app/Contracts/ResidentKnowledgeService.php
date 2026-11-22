@@ -1,3 +1,4 @@
 <?php
 namespace App\Contracts;
-interface ResidentKnowledgeService { public function answer(string $question): array; }
+use App\Models\User;
+interface ResidentKnowledgeService { public function answer(string $question, ?User $resident = null): array; }
