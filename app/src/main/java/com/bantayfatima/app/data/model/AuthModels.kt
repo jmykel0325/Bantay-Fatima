@@ -2,7 +2,7 @@ package com.bantayfatima.app.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class ApiEnvelope<T>(val success: Boolean = false, val message: String? = null, val data: T? = null, val errors: Map<String, List<String>>? = null)
+data class ApiEnvelope<T>(val success: Boolean = false, val message: String? = null, val data: T? = null, val errors: Map<String, List<String>>? = null, val meta: PageMeta? = null)
 data class UserDto(
     val id: Long,
     @SerializedName("first_name") val firstName: String,

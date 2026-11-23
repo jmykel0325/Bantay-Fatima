@@ -12,6 +12,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
 import java.io.IOException
+import kotlinx.coroutines.CancellationException
 import java.io.ByteArrayOutputStream
 
 /**
@@ -94,6 +95,8 @@ class ResidentRepository {
     private suspend fun <T> call(block: suspend () -> Response<ApiEnvelope<T>>): Result<ApiEnvelope<T>> =
         try {
             handle(block())
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (offline: IOException) {
             Result.failure(Exception("Cannot reach the Bantay Fatima server. Check your internet connection and try again."))
         } catch (unexpected: Exception) {

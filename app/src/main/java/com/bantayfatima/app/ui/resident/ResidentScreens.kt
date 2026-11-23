@@ -56,7 +56,8 @@ import com.bantayfatima.app.data.model.ReportCounts
 import com.bantayfatima.app.data.model.ReportDto
 import com.bantayfatima.app.data.model.ResidentDashboard
 import com.bantayfatima.app.data.model.UserDto
-import com.bantayfatima.app.data.repository.AssistantReply
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bantayfatima.app.data.repository.PublicContentRepository
 import com.bantayfatima.app.data.repository.ResidentRepository
 import com.bantayfatima.app.ui.components.*
@@ -352,26 +353,18 @@ private fun reportStatusTone(status: String?): Pair<StatusTone, String> = when (
 @Composable
 fun AssistantScreen(
     onBack: () -> Unit,
-    repository: ResidentRepository = remember { ResidentRepository() },
+    assistant: AssistantViewModel = viewModel(),
 ) {
     var question by rememberSaveable { mutableStateOf("") }
-    var reply by remember { mutableStateOf<AssistantReply?>(null) }
-    var error by remember { mutableStateOf<String?>(null) }
-    var busy by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
+    val messages by assistant.messages.collectAsStateWithLifecycle()
+    val busy by assistant.busy.collectAsStateWithLifecycle()
+    val scroll = rememberScrollState()
+    LaunchedEffect(messages.size, scroll.maxValue) { scroll.animateScrollTo(scroll.maxValue) }
 
     val ask = {
         if (question.trim().length >= 3 && !busy) {
-            scope.launch {
-                busy = true
-                error = null
-                repository.askAssistant(question).fold(
-                    { reply = it },
-                    { reply = null; error = it.message ?: "The assistant is unavailable." },
-                )
-                busy = false
-            }
-            Unit
+            assistant.send(question)
+            question = ""
         }
     }
 
@@ -383,17 +376,35 @@ fun AssistantScreen(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
                 .imePadding()
                 .padding(horizontal = Spacing.screen)
-                .padding(top = Spacing.xs, bottom = Spacing.xxl),
+                .padding(top = Spacing.xs, bottom = Spacing.sm),
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
-            Text(
-                text = "Answers are drawn from approved Barangay Fatima documents, advisories, and emergency information.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Column(
+                Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+            ) {
+                messages.forEach { message ->
+                    AppCard(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                            Text(
+                                if (message.fromResident) "You" else "Bantay Fatima Assistant",
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                            Text(
+                                message.text,
+                                color = if (message.isError) MaterialTheme.colorScheme.error
+                                    else MaterialTheme.colorScheme.onSurface,
+                            )
+                            if (message.sources.isNotEmpty()) {
+                                Text("Sources", style = MaterialTheme.typography.labelMedium)
+                                message.sources.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                            }
+                        }
+                    }
+                }
+            }
             AppTextField(
                 value = question,
                 onValueChange = { question = it },
@@ -409,31 +420,6 @@ fun AssistantScreen(
                 enabled = question.trim().length >= 3,
                 onClick = ask,
             )
-
-            ErrorBanner(error, onDismiss = { error = null })
-
-            reply?.let { answer ->
-                AppCard(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                        Text(answer.answer, style = MaterialTheme.typography.bodyMedium)
-                        if (answer.sources.isNotEmpty()) {
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                            Text(
-                                text = "Sources",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            answer.sources.forEach {
-                                Text(
-                                    text = "• $it",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }

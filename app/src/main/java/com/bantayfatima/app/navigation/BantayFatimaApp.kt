@@ -20,6 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -58,6 +60,7 @@ private object Routes {
 
     const val STAFF_HOME = "staff/home"
     const val ASSIGNED = "staff/assigned"
+    const val STAFF_REPORT = "staff/assigned/{reportId}"
     const val STAFF_NOTIFICATIONS = "staff/notifications"
     const val STAFF_PROFILE = "staff/profile"
 }
@@ -292,8 +295,15 @@ private fun StaffApp(user: UserDto, auth: AuthViewModel) {
         bottomBar = { BantayFatimaBottomNavigation(destinations, current) { nav.navigateTop(it.route) } },
     ) { padding ->
         NavHost(nav, Routes.STAFF_HOME, Modifier.padding(padding)) {
-            composable(Routes.STAFF_HOME) { StaffDashboardScreen(user) }
-            composable(Routes.ASSIGNED) { AssignedReportsScreen() }
+            composable(Routes.STAFF_HOME) {
+                StaffDashboardScreen(user) { nav.navigate("staff/assigned/$it") }
+            }
+            composable(Routes.ASSIGNED) {
+                AssignedReportsScreen { nav.navigate("staff/assigned/$it") }
+            }
+            composable(Routes.STAFF_REPORT, arguments = listOf(navArgument("reportId") { type = NavType.LongType })) { entry ->
+                StaffReportDetailScreen(requireNotNull(entry.arguments).getLong("reportId"), nav::popBackStack)
+            }
             composable(Routes.UPDATES) { PublicUpdatesScreen() }
             composable(Routes.STAFF_NOTIFICATIONS) { StaffNotificationsScreen() }
             composable(Routes.STAFF_PROFILE) { ProfileScreen(user, auth::logout) }

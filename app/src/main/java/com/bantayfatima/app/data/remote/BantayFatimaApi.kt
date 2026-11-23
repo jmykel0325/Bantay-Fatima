@@ -7,6 +7,8 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Multipart
 import retrofit2.http.Part
+import retrofit2.http.Path
+import retrofit2.http.Query
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import com.bantayfatima.app.data.model.*
@@ -52,4 +54,26 @@ interface BantayFatimaApi {
         @Part photos: List<MultipartBody.Part>,
     ): Response<ApiEnvelope<ReportDto>>
     @POST("resident/assistant/query") suspend fun assistantQuery(@Body request: AssistantRequest): Response<ApiEnvelope<AssistantSources>>
+
+    @GET("staff/dashboard") suspend fun staffDashboard(): Response<ApiEnvelope<StaffDashboard>>
+
+    @GET("staff/assigned-reports")
+    suspend fun staffAssigned(@Query("page") page: Int): Response<ApiEnvelope<List<ReportDto>>>
+
+    @GET("staff/assigned-reports/{id}")
+    suspend fun staffReport(@Path("id") id: Long): Response<ApiEnvelope<ReportDto>>
+
+    @Multipart
+    @POST("staff/assigned-reports/{id}/progress")
+    suspend fun staffProgress(
+        @Path("id") id: Long,
+        @Part fields: List<MultipartBody.Part>,
+        @Part proof: MultipartBody.Part?,
+    ): Response<ApiEnvelope<ReportDto>>
+
+    @GET("staff/notifications")
+    suspend fun staffNotifications(): Response<ApiEnvelope<List<StaffNotification>>>
+
+    @POST("staff/notifications/read-all")
+    suspend fun markStaffNotificationsRead(): Response<ApiEnvelope<Any>>
 }
